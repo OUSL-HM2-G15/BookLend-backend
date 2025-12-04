@@ -1,9 +1,13 @@
 package com.booklend.backend.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "locations")
+@Getter
+@Setter
 public class Location {
 
     @Id
@@ -13,22 +17,4 @@ public class Location {
 
     @Column(name = "location_name", nullable = false)
     private String locationName;
-
-    // getters and setters
-
-    public Long getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationName(Long locationId) {
-        this.locationId = locationId;
-    }
-
-    public String getLocationName() {
-        return locationName;
-    }
-
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
-    }
 }
