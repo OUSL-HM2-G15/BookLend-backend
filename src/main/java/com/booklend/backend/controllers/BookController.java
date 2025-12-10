@@ -1,10 +1,17 @@
 package com.booklend.backend.controllers;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+
 import com.booklend.backend.models.Book;  
 import com.booklend.backend.services.BookService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,4 +27,27 @@ public class BookController {
     public List<Book> getAllBooks() {
         return bookService.getAllBooks();
     }
+
+   @PostMapping
+   public ResponseEntity<?> addBook(@RequestBody Map<String, Object> params) { // Map to hold request body parameters - key-value pairs
+    try {
+        Book savedBook = bookService.addBook(
+            params.get("title").toString(),
+            params.get("author").toString(),
+            params.get("description").toString(),
+            Long.parseLong(params.get("category_id").toString()),
+            new BigDecimal(params.get("fee_per_week").toString()),
+            params.get("status").toString(),
+            Long.parseLong(params.get("available_location_id").toString()),
+            params.get("isbn").toString(),
+            Integer.parseInt(params.get("published_year").toString()),
+            params.get("image_url").toString() //  get URL of uploaded image
+        );
+        return ResponseEntity.ok(savedBook); // Return the saved book as response
+    } catch (Exception e) {
+        e.printStackTrace(); // Log the exception for debugging
+        return ResponseEntity.status(500).body(e.getMessage()); // Return error message with 500 status
+    }
+}
+
 }
