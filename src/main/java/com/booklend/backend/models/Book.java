@@ -48,7 +48,7 @@ public class Book {
     private Location availableLocation;
 
     @Column(name = "image", length = 255)
-    private String image;
+    private String imageUrl; // URL of the book image
 
     @Column(name = "isbn", length = 17)
     private String isbn;
@@ -62,7 +62,5 @@ public class Book {
     public Book() {
         // Default values
         this.createdAt = LocalDateTime.now();
-        this.status = "Available";
-        this.feePerWeek = BigDecimal.ZERO;
     }
 }
