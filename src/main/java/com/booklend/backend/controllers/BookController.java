@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController // This class handles HTTP requests and returns JSON
 @RequestMapping("/api/books") // Base URL for all APIs in this controller
 @CrossOrigin(origins = "${frontend.url}") // Allow requests from React app
+@Slf4j
 public class BookController {
 
     @Autowired
@@ -46,7 +49,7 @@ public class BookController {
         );
         return ResponseEntity.ok(savedBook); // Return the saved book as response
         } catch (Exception e) {
-            e.printStackTrace(); // Log the exception for debugging
+            log.error("exception message : {}", e.getMessage());
             return ResponseEntity.status(500).body(e.getMessage()); // Return error message with 500 status
         }
     }
@@ -63,7 +66,7 @@ public class BookController {
             return ResponseEntity.ok(book);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("exception message : {}", e.getMessage());
             return ResponseEntity.status(500).body(e.getMessage());
         }
     }
