@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Show login credentials for a user.
@@ -17,6 +19,8 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "account") // Maps to 'account' table in the DB
+@Getter
+@Setter
 
 public class Account {
     
@@ -55,7 +59,8 @@ public class Account {
     // Default constructor required by JPA (Hibernate)
     public Account() {}
 
-    // Getter and Setter methods
+    /*
+    ** Getter and Setter methods
 
     public String getUsername() {
         return username;
@@ -87,7 +92,7 @@ public class Account {
 
     public void setUser(User user) {
         this.user = user;
-    }
+    } */
 
     @Override
     public String toString() {

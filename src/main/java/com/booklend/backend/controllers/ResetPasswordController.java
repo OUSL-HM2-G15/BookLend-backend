@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "${frontend.url}")
 public class ResetPasswordController {
 
     @Autowired

@@ -13,6 +13,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * User entity class that represents the "users" table in the database.
@@ -21,6 +23,8 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
     /**
      * Primary Key (PK) for the User table. 
@@ -88,7 +92,8 @@ public class User {
     // Default constructor required by JPA (Hibernate)
     public User() {}
 
-    // Getter and Setter methods
+  /* 
+  ** Getter and Setter methods
 
     public int getUserId() {
         return userId;
@@ -153,7 +158,7 @@ public class User {
     public void setCreatedAt(LocalDateTime  createdAt) {
         this.createdAt = createdAt;
     }
-
+*/
     // Optional we can override toString() for better logging and debugging
     @Override
     public String toString() {

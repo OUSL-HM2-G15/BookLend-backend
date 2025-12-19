@@ -10,7 +10,10 @@ import java.util.Optional;
  * Extends JpaRepository for CRUD operations.
  */
 @Repository
-public interface  LocationRepository extends JpaRepository<Location, Integer> {
+public interface  LocationRepository extends JpaRepository<Location, Long> {
     Optional<Location> findByLocationName(String name);
 }
+
+/*public interface LocationRepository extends JpaRepository<Location, Long> {
+}*/
 

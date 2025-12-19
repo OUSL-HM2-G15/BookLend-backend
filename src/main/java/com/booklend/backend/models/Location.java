@@ -1,6 +1,8 @@
 package com.booklend.backend.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Location entity class that represents the "locations" table in the database.
@@ -8,6 +10,8 @@ import jakarta.persistence.*;
  */
 @Entity
 @Table(name = "locations") // This maps the Location class to the 'locations' table in DB.
+@Getter // Lombok generates getter methods
+@Setter // Lombok generates setter methods
 
 public class Location {
    /**
@@ -17,7 +21,7 @@ public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "location_id") // Maps to the 'location_id' column in DB.
-    private int locationId;
+    private Long locationId;
 
     /**
      * The name of the location (e.g., "Colombo", "Kandy").
@@ -29,23 +33,6 @@ public class Location {
     // Default constructor required by JPA (Hibernate)
     public Location() {}
 
-    // Getter and Setter methods to access and modify the fields
-
-    public int getLocationId() {
-        return locationId;
-    }
-
-    public void setLocationId(int locationId) {
-        this.locationId = locationId;
-    }
-
-    public String getLocationName() {
-        return locationName;
-    }
-
-    public void setLocationName(String locationName) {
-        this.locationName = locationName;
-    }
 
     @Override
     public String toString() {
