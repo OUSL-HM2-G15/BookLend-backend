@@ -59,41 +59,6 @@ public class Account {
     // Default constructor required by JPA (Hibernate)
     public Account() {}
 
-    /*
-    ** Getter and Setter methods
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    } */
-
     @Override
     public String toString() {
         return "Account{username='" + username + "', role='" + role + "'}";
