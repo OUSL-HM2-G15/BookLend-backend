@@ -33,9 +33,4 @@ public class Location {
     // Default constructor required by JPA (Hibernate)
     public Location() {}
 
-
-    @Override
-    public String toString() {
-        return "Location{id=" + locationId + ", name='" + locationName + "'}";
-    }
 }

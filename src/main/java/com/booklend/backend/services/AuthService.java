@@ -58,23 +58,3 @@ public class AuthService {
         return true;
     }
 }
-       
-       
-       
-       
-       
-       
-       
-       /* = accountRepository.findById(username)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
-
-
-        Account account = accountOpt.get();
-        if (!passwordEncoder.matches(password, account.getPassword())) {
-            return null;  // If password doesn't match
-        }
-
-        // If credentials are correct, generate JWT token
-        return jwtUtil.generateToken(account);
-    }
-}*/

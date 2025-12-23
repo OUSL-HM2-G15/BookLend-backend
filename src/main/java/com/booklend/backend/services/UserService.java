@@ -54,13 +54,6 @@ public class UserService {
             return "Email already exists";
         }
 
-        // Check if location exists
-        /*
-        Optional<Location> location = locationRepository.findByLocationName(user.getLocation().getLocationName());
-        if (location.isEmpty())
-            return "Invalid location";
-        user.setLocation(location.get());
-        */
        var location = locationRepository.findByLocationName(user.getLocation().getLocationName())
                 .orElseThrow(() -> new RuntimeException("Invalid location"));
         user.setLocation(location);

@@ -59,11 +59,6 @@ public class Account {
     // Default constructor required by JPA (Hibernate)
     public Account() {}
 
-    @Override
-    public String toString() {
-        return "Account{username='" + username + "', role='" + role + "'}";
-    }
-
     // Utility method to hash password before saving
     public static String hashPassword(String rawPassword) {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

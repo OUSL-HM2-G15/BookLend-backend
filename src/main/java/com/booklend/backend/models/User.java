@@ -92,9 +92,4 @@ public class User {
     // Default constructor required by JPA (Hibernate)
     public User() {}
 
-    // Optional we can override toString() for better logging and debugging
-    @Override
-    public String toString() {
-        return "User{id=" + userId + ", name='" + fullName + "', email='" + email + "'}";
-    }
 }

@@ -3,11 +3,15 @@ package com.booklend.backend.controllers;
 import com.booklend.backend.models.User;
 import com.booklend.backend.services.AuthService;
 import com.booklend.backend.services.UserService;
-import com.booklend.backend.models.Location;
+import com.booklend.backend.dto.RegisterRequest;
+import com.booklend.backend.dto.LoginRequest;
+import com.booklend.backend.dto.JwtResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 /**
  * REST Controller for authentication-related endpoints.
@@ -33,7 +37,7 @@ public class AuthController {
      * }
      */
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest request) {
         // Validate location
         if (request.getLocation() == null || request.getLocation().getLocationName() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Location is required");
@@ -76,11 +80,10 @@ public class AuthController {
     }
 
     /**
-     * Handles login request by validating credentials and returning JWT token if
-     * valid.
+     * Handles login request by validating credentials and returning JWT token if valid.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         try {
             // Call AuthService to validate credentials and generate JWT token
             String token = authService.loginUser(request.getUsername(), request.getPassword());
@@ -93,131 +96,5 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
 
-    }
-
-    /**
-     * DTO class to receive registration request from frontend
-     */
-    static class RegisterRequest {
-        @jakarta.validation.constraints.NotBlank
-        private String fullName;
-        @jakarta.validation.constraints.NotBlank
-        private String username;
-        @jakarta.validation.constraints.NotBlank
-        private String password;
-        @jakarta.validation.constraints.NotBlank
-        private String confirmPassword;
-        @jakarta.validation.constraints.NotBlank
-        private String email;
-        private String contactNumber;
-        private String whatsappNumber;
-        private Location location;
-
-        // Getters and Setters
-        public String getFullName() {
-            return fullName;
-        }
-
-        public void setFullName(String fullName) {
-            this.fullName = fullName;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public String getConfirmPassword() {
-            return confirmPassword;
-        }
-
-        public void setConfirmPassword(String confirmPassword) {
-            this.confirmPassword = confirmPassword;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getContactNumber() {
-            return contactNumber;
-        }
-
-        public void setContactNumber(String contactNumber) {
-            this.contactNumber = contactNumber;
-        }
-
-        public String getWhatsappNumber() {
-            return whatsappNumber;
-        }
-
-        public void setWhatsappNumber(String whatsappNumber) {
-            this.whatsappNumber = whatsappNumber;
-        }
-
-        public Location getLocation() {
-            return location;
-        }
-
-        public void setLocation(Location location) {
-            this.location = location;
-        }
-    }
-
-    // LoginRequest DTO
-    static class LoginRequest {
-        @jakarta.validation.constraints.NotBlank
-        private String username;
-        @jakarta.validation.constraints.NotBlank
-        private String password;
-
-        // Getters and setters
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-    }
-
-    // JWT response DTO
-    static class JwtResponse {
-        private String token;
-
-        public JwtResponse(String token) {
-            this.token = token;
-        }
-
-        public String getToken() {
-            return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
-        }
     }
 }
