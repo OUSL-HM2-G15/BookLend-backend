@@ -7,6 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -20,9 +21,6 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Auto-incremented ID
     @Column(name = "book_id")
     private Long bookId;
-
-    @Column(name = "user_id") // ID of the user who owns the book
-    private Long userId;
 
     @Column(name = "title", nullable = false, length = 150)
     private String title;
@@ -58,6 +56,11 @@ public class Book {
 
     @Column(name = "published_year")
     private Integer publishedYear;
+
+    @ManyToOne(fetch = FetchType.LAZY) // fetchType.Jazy to avoid loading user unless needed
+    @JoinColumn(name = "user_id", nullable = false) // join with user table
+    @JsonIgnore // To prevent serialization issues
+    private User user;
 
     public Book() {
         // Default values
