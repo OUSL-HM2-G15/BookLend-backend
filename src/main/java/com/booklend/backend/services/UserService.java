@@ -5,6 +5,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.booklend.backend.models.User;
+import com.booklend.backend.dto.UserDataDTO;
 import com.booklend.backend.models.Account;
 import com.booklend.backend.repositories.AccountRepository;
 import com.booklend.backend.repositories.LocationRepository;
@@ -74,6 +75,29 @@ public class UserService {
 
         return "User registered successfully";
     }
+
+    // Fetch user data by username
+
+    public UserDataDTO getMyProfile(String username) {
+
+        Account account = accountRepository.findById(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        User user = account.getUser();
+
+        UserDataDTO dto = new UserDataDTO();
+        dto.setFullName(user.getFullName());
+        dto.setEmail(user.getEmail());
+        dto.setContactNumber(user.getContactNo());
+        dto.setWhatsappNumber(user.getWhatsappNo());
+        dto.setProfilePic(user.getProfilePic());
+        dto.setLocationName(user.getLocation().getLocationName());
+        dto.setUsername(account.getUsername());
+        dto.setRole(account.getRole());
+
+        return dto;
+    }
+
 
     /*
     ** Method for updating profile later (trim inputs)
