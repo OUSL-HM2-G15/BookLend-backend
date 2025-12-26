@@ -85,13 +85,7 @@ public class BookService {
     /**
      * Get books posted by the currently logged-in user
      */
-    public List<BookDTO> getMyBooks(Authentication authentication) {
-
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        String username = authentication.getName(); // Get username from authentication - jwt token
+    public List<BookDTO> getMyBooks(String username) {
 
         Account account = accountRepository.findById(username) // fetch account by username
                 .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -124,26 +118,11 @@ public class BookService {
         return dto;
     }
 
-    // Reusable authorization method
+    // Reusable method to validate book ownership
     private void validateBookOwnership(Book book, User currentUser) {
         if (book.getUser().getUserId() != currentUser.getUserId()) {
             throw new RuntimeException("You are not allowed to modify this book");
         }
-    }
-
-    // Reusable method to get current user from authentication
-    private User getCurrentUser(Authentication authentication) {
-
-        if (authentication == null || authentication.getName() == null) {
-            throw new RuntimeException("Unauthorized");
-        }
-
-        String username = authentication.getName();
-
-         Account account = accountRepository.findById(username)
-             .orElseThrow(() -> new RuntimeException("Account not found"));
-
-        return account.getUser();
     }
 
     /**
@@ -152,9 +131,13 @@ public class BookService {
     public Book updateBookStatus(
             Long bookId,
             String status,
-            Authentication authentication
+            String username
     ) {
-        User currentUser = getCurrentUser(authentication);
+
+        Account account = accountRepository.findById(username)
+        .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        User currentUser = account.getUser();
 
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Book not found"));

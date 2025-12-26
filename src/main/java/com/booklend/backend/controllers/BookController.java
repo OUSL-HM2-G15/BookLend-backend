@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.booklend.backend.dto.BookDTO;
-import com.booklend.backend.models.Book;  
+import com.booklend.backend.models.Book;
 import com.booklend.backend.services.BookService;
 import org.springframework.security.core.Authentication;
 
@@ -86,9 +86,31 @@ public class BookController {
      * Returns books posted by the logged-in user
      */
     @GetMapping("/me")
-    public ResponseEntity<List<BookDTO>> getMyBooks(Authentication authentication) {
-        List<BookDTO> books = bookService.getMyBooks(authentication);
-        return ResponseEntity.ok(books);
+    public ResponseEntity<?> getMyBooks(Authentication authentication) {
+        try {
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body("Unauthorized");
+            }
+
+            String username = authentication.getName();
+            List<BookDTO> books = bookService.getMyBooks(username);
+
+            return ResponseEntity.ok(books);
+
+        } catch (RuntimeException e) {
+            log.error("Error fetching user books: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Unexpected error while fetching books", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred");
+        }
     }
 
     /**
@@ -102,24 +124,28 @@ public class BookController {
             Authentication authentication
     ) {
         try {
-            String status = body.get("status");
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body("Unauthorized");
+            }
 
+            String status = body.get("status");
             if (status == null) {
                 return ResponseEntity.badRequest().body("Status is required");
             }
 
-            Book updatedBook = bookService.updateBookStatus(
-                    bookId,
-                    status,
-                    authentication
-            );
+            String username = authentication.getName();
+            Book updatedBook = bookService.updateBookStatus(bookId, status, username);
 
             return ResponseEntity.ok(updatedBook);
 
         } catch (RuntimeException e) {
             log.error("Error updating book status: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
+        }    
     }
 
 }
