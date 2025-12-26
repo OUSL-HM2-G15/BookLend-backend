@@ -123,5 +123,49 @@ public class BookService {
 
         return dto;
     }
-    
+
+    // Reusable authorization method
+    private void validateBookOwnership(Book book, User currentUser) {
+        if (book.getUser().getUserId() != currentUser.getUserId()) {
+            throw new RuntimeException("You are not allowed to modify this book");
+        }
+    }
+
+    // Reusable method to get current user from authentication
+    private User getCurrentUser(Authentication authentication) {
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        String username = authentication.getName();
+
+         Account account = accountRepository.findById(username)
+             .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        return account.getUser();
+    }
+
+    /**
+     * Update the status of a book
+     */
+    public Book updateBookStatus(
+            Long bookId,
+            String status,
+            Authentication authentication
+    ) {
+        User currentUser = getCurrentUser(authentication);
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        validateBookOwnership(book, currentUser);
+
+        if (!status.equals("Available") && !status.equals("Unavailable")) {
+            throw new RuntimeException("Invalid status value");
+        }
+
+        book.setStatus(status);
+        return bookRepository.save(book);
+    }
 }

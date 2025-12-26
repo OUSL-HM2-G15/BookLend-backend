@@ -9,11 +9,13 @@ import com.booklend.backend.services.BookService;
 import org.springframework.security.core.Authentication;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -87,6 +89,37 @@ public class BookController {
     public ResponseEntity<List<BookDTO>> getMyBooks(Authentication authentication) {
         List<BookDTO> books = bookService.getMyBooks(authentication);
         return ResponseEntity.ok(books);
+    }
+
+    /**
+     * PUT /api/books/{bookId}/status
+     * Update the status of a book
+     */
+    @PutMapping("/{bookId}/status")
+    public ResponseEntity<?> updateBookStatus(
+            @PathVariable Long bookId,
+            @RequestBody Map<String, String> body,
+            Authentication authentication
+    ) {
+        try {
+            String status = body.get("status");
+
+            if (status == null) {
+                return ResponseEntity.badRequest().body("Status is required");
+            }
+
+            Book updatedBook = bookService.updateBookStatus(
+                    bookId,
+                    status,
+                    authentication
+            );
+
+            return ResponseEntity.ok(updatedBook);
+
+        } catch (RuntimeException e) {
+            log.error("Error updating book status: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 }
