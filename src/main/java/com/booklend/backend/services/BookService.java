@@ -1,6 +1,7 @@
 package com.booklend.backend.services;
 
 import com.booklend.backend.dto.BookDTO;
+import com.booklend.backend.dto.BookRequestDTO;
 import com.booklend.backend.models.Account;
 import com.booklend.backend.models.Book;
 import com.booklend.backend.models.Category;
@@ -150,5 +151,61 @@ public class BookService {
 
         book.setStatus(status);
         return bookRepository.save(book);
+    }
+
+    /**
+     * Update book details
+     */ 
+    public BookDTO updateMyBook(
+            Long bookId,
+            BookRequestDTO dto,
+            String username
+    ) {
+
+        Account account = accountRepository.findById(username)
+        .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        User currentUser = account.getUser();
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        validateBookOwnership(book, currentUser);
+
+        // Update book details on the book entity
+        book.setTitle(dto.getTitle());
+        book.setAuthor(dto.getAuthor());
+        book.setFeePerWeek(dto.getFeePerWeek());
+        book.setAvailableLocation(locationRepository.findById(dto.getLocationId())
+            .orElseThrow(() -> new RuntimeException("Location not found")));
+        book.setCategory(categoryRepository.findById(dto.getCategoryId())
+            .orElseThrow(() -> new RuntimeException("Category not found")));
+        book.setStatus(dto.getStatus());
+        book.setImageUrl(dto.getImageUrl());
+        book.setIsbn(dto.getIsbn());
+        book.setPublishedYear(dto.getPublishedYear());
+        book.setDescription(dto.getDescription());
+
+        Book updatedBook = bookRepository.save(book);
+
+        return mapToDto(updatedBook);    
+    }
+    // Maps Book entity to BookDTO
+    private BookDTO mapToDto(Book book) {
+        BookDTO dto = new BookDTO();
+        dto.setId(book.getBookId());
+        dto.setTitle(book.getTitle());
+        dto.setAuthor(book.getAuthor());
+        dto.setFeePerWeek(book.getFeePerWeek());
+        dto.setStatus(book.getStatus());
+        dto.setImageUrl(book.getImageUrl());
+        dto.setLocationName(book.getAvailableLocation().getLocationName());
+        dto.setIsbn(book.getIsbn());
+        dto.setPublishedYear(book.getPublishedYear());
+        dto.setDescription(book.getDescription());
+        dto.setCategoryName(book.getCategory().getCategoryName());
+        dto.setCreatedAt(book.getCreatedAt());
+
+        return dto;
     }
 }
