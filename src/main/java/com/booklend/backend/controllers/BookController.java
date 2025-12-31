@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -177,4 +178,45 @@ public class BookController {
                     .build();
         }
     }
+
+    // GET /books/me/{id} - Get a single book of logged-in user
+    @GetMapping("/me/{id}")
+    public ResponseEntity<?> getMyBookById(
+        @PathVariable Long id,
+        Authentication authentication) {
+
+    if (authentication == null || authentication.getName() == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+    }
+
+    try {
+        String username = authentication.getName();
+        BookDTO bookDTO = bookService.getMyBookById(id, username);
+        return ResponseEntity.ok(bookDTO);
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+    }
+
+    // DELETE /books/me/{id} - Delete logged-in user's book
+    @DeleteMapping("/me/{id}")
+    public ResponseEntity<?> deleteMyBook(
+        @PathVariable Long id,
+        Authentication authentication) {
+
+    if (authentication == null || authentication.getName() == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+    }
+
+    try {
+        String username = authentication.getName();
+        bookService.deleteMyBook(id, username);
+        return ResponseEntity.ok("Book deleted successfully");
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+}
+
 }
