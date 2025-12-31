@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.booklend.backend.dto.BookDTO;
+import com.booklend.backend.dto.BookRequestDTO;
 import com.booklend.backend.models.Book;
 import com.booklend.backend.services.BookService;
 import org.springframework.security.core.Authentication;
@@ -148,4 +149,32 @@ public class BookController {
         }    
     }
 
+    /**
+     * PUT /api/books/me/{bookId}
+     * Update book details
+     */    
+    @PutMapping("/me/{bookId}")
+    public ResponseEntity<BookDTO> updateMyBook(
+            @PathVariable Long bookId,
+            @RequestBody BookRequestDTO bookRequestDTO,
+            Authentication authentication
+    ) {
+        try {
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .build();
+            }
+            String username = authentication.getName();
+            BookDTO updatedBook = bookService.updateMyBook(bookId, bookRequestDTO, username);
+
+            return ResponseEntity.ok(updatedBook);
+
+        } catch (RuntimeException e) {
+            log.error("Error updating book: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+    }
 }
