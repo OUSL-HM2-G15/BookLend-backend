@@ -159,9 +159,22 @@ public class BookController {
             @RequestBody BookRequestDTO bookRequestDTO,
             Authentication authentication
     ) {
+        try {
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .build();
+            }
             String username = authentication.getName();
             BookDTO updatedBook = bookService.updateMyBook(bookId, bookRequestDTO, username);
 
             return ResponseEntity.ok(updatedBook);
+
+        } catch (RuntimeException e) {
+            log.error("Error updating book: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
     }
 }
