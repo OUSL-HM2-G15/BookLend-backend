@@ -14,6 +14,7 @@ public class BookDTO {
     private String title;
     private String author;
     private String locationName;
+    private Long locationId;
     private BigDecimal feePerWeek;
     private String status;   // Available / Unavailable
     private String imageUrl;
@@ -21,6 +22,7 @@ public class BookDTO {
     private Integer publishedYear;
     private String description;
     private String categoryName;
+    private Long categoryId;
     private LocalDateTime createdAt;
 }
 

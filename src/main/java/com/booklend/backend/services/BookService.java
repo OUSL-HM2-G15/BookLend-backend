@@ -110,10 +110,12 @@ public class BookService {
         dto.setStatus(book.getStatus());
         dto.setImageUrl(book.getImageUrl());
         dto.setLocationName(book.getAvailableLocation().getLocationName());
+        dto.setLocationId(book.getAvailableLocation().getLocationId());
         dto.setIsbn(book.getIsbn());
         dto.setPublishedYear(book.getPublishedYear());
         dto.setDescription(book.getDescription());
         dto.setCategoryName(book.getCategory().getCategoryName());
+        dto.setCategoryId(book.getCategory().getCategoryId());
         dto.setCreatedAt(book.getCreatedAt());
 
         return dto;
@@ -200,12 +202,50 @@ public class BookService {
         dto.setStatus(book.getStatus());
         dto.setImageUrl(book.getImageUrl());
         dto.setLocationName(book.getAvailableLocation().getLocationName());
+        dto.setLocationId(book.getAvailableLocation().getLocationId());
         dto.setIsbn(book.getIsbn());
         dto.setPublishedYear(book.getPublishedYear());
         dto.setDescription(book.getDescription());
         dto.setCategoryName(book.getCategory().getCategoryName());
+        dto.setCategoryId(book.getCategory().getCategoryId());
         dto.setCreatedAt(book.getCreatedAt());
 
         return dto;
     }
+
+    /**
+     * Get a single book of logged-in user
+     */
+    public BookDTO getMyBookById(Long id, String username) {
+        Account account = accountRepository.findById(username)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        User currentUser = account.getUser();
+
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
+
+        validateBookOwnership(book, currentUser);
+
+        return mapToDto(book);
+    }
+
+    /**
+     * delete logged-in user's book
+     */
+    public void deleteMyBook(Long id, String username) {
+
+    Account account = accountRepository.findById(username)
+            .orElseThrow(() -> new RuntimeException("Account not found"));
+
+    User currentUser = account.getUser();
+
+    Book book = bookRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Book not found"));
+
+    validateBookOwnership(book, currentUser);
+
+    bookRepository.delete(book);
+    }
+
 }
