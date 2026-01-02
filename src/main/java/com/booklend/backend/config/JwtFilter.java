@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
             // Check if token is blacklisted (logged out)
             if (logoutService.isBlacklisted(jwt)) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"error\":\"Token has been logged out. Please login again.\"}");
+                response.getWriter().write("{\"error\":\"Token has been expired. Please login again.\"}");
                 return;
             }
 
