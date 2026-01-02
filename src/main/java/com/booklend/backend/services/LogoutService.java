@@ -17,8 +17,12 @@ public class LogoutService {
 
     // Check if token is blacklisted
     public boolean isBlacklisted(String token) {
+        // Log an error or warning that a null token was passed
+        if (token == null)
+            return false; // Null check
         Long expiry = blacklistedTokens.get(token);
-        if (expiry == null) return false;
+        if (expiry == null)
+            return false;
 
         if (expiry < System.currentTimeMillis()) {
             blacklistedTokens.remove(token); // cleanup expired token

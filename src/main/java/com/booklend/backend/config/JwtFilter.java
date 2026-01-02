@@ -34,11 +34,10 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-                
 
         String path = request.getServletPath();
 
-       // Skip public endpoints and preflight
+        // Skip public endpoints and preflight
         if (path.startsWith("/api/auth")
                 || path.startsWith("/api/locations")
                 || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
@@ -59,18 +58,17 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String username = jwtUtil.extractUsername(jwt);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            username,
-                            null,
-                            Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
-                    );
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    username,
+                    null,
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
         filterChain.doFilter(request, response);
     }
+
     // Extract JWT from Authorization header
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -79,7 +77,5 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         return null;
 
-        
     }
 }
-
