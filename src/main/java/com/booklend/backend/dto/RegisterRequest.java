@@ -1,6 +1,5 @@
 package com.booklend.backend.dto;
 
-import com.booklend.backend.models.Location;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +32,6 @@ public class RegisterRequest {
 
     private String whatsappNumber;
 
-    private Location location;
+    private String location;
 
 }
