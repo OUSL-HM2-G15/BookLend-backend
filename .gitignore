@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 .env.properties
 *.env
+sql/01__initial_schema.sql
 
 ### STS ###
 .apt_generated
