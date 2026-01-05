@@ -9,6 +9,8 @@ import com.booklend.backend.dto.UserDataDTO;
 import com.booklend.backend.models.Account;
 import com.booklend.backend.repositories.AccountRepository;
 import com.booklend.backend.repositories.UserRepository;
+import com.booklend.backend.models.Location;
+import com.booklend.backend.repositories.LocationRepository;
 
 /**
  * Service layer handles user registration and business logic.
@@ -22,6 +24,9 @@ public class UserService {
     private AccountRepository accountRepository;
 
     @Autowired
+    private LocationRepository locationRepository;
+
+    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
     public boolean checkIfUsernameExists(String username) {
@@ -32,7 +37,7 @@ public class UserService {
      * Registers a new user with hashed password.
      */
     @Transactional
-    public String registerUser(User user, String username, String rawPassword, String role) {
+    public String registerUser(User user, String username, String rawPassword, Long locationId, String role) {
         // Avoid accidental spaces breaking uniqueness
         username = username.trim();
         rawPassword = rawPassword.trim();
@@ -52,6 +57,11 @@ public class UserService {
 
         // Hash password using BCrypt
         String hashedPassword = passwordEncoder.encode(rawPassword);
+        
+        // Fetch location and set it to user
+        Location location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new RuntimeException("Invalid location"));
+        user.setLocation(location);
 
         userRepository.save(user);
 

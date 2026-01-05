@@ -1,6 +1,7 @@
 package com.booklend.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,6 +33,7 @@ public class RegisterRequest {
 
     private String whatsappNumber;
 
-    private String location;
+    @NotNull(message = "Location is required")
+    private Long locationId;
 
 }

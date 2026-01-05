@@ -75,12 +75,12 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> register(@Valid @RequestBody RegisterRequest request) {
 
         // Validate locationName
-        if (request.getLocation() == null || request.getLocation().isEmpty()) {
+        if (request.getLocationId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Location is required"));
         }
 
-        Optional<Location> locationOpt = locationRepository.findByLocationName(request.getLocation());
+        Optional<Location> locationOpt = locationRepository.findById(request.getLocationId());
         if (locationOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Invalid location"));
@@ -114,7 +114,8 @@ public class AuthController {
         user.setLocation(locationOpt.get());
 
         try {
-            String result = userService.registerUser(user, request.getUsername(), request.getPassword(), "user");
+            String result = userService.registerUser(user, request.getUsername(), 
+            request.getPassword(), request.getLocationId(), "user");
             switch (result) {
                 case "User registered successfully":
                     return ResponseEntity.ok(Map.of("message", result));
