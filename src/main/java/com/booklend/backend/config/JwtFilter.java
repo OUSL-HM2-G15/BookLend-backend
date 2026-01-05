@@ -40,6 +40,8 @@ public class JwtFilter extends OncePerRequestFilter {
         // Skip public endpoints and preflight
         if (path.startsWith("/api/auth")
                 || path.startsWith("/api/locations")
+                || path.startsWith("/api/categories")
+                || path.startsWith("/api/books/public")
                 || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;

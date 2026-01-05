@@ -33,7 +33,11 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
-    @GetMapping
+    /**
+     * GET /api/books/public
+     * Returns all books (public endpoint)
+     */
+    @GetMapping("/public")
     public List<Book> getAllBooks() {
         return bookService.getAllBooks();
     }
