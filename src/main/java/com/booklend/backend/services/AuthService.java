@@ -21,17 +21,18 @@ public class AuthService {
     private BCryptPasswordEncoder passwordEncoder;
 
     /**
-     * Authenticates the user and generates a JWT token if the credentials are valid.
+     * Authenticates the user and generates a JWT token if the credentials are
+     * valid.
      */
     public String loginUser(String username, String password) {
-        Optional<Account> accountOpt = accountRepository.findById(username);  // Find account by email
+        Optional<Account> accountOpt = accountRepository.findById(username); // Find account by email
         if (accountOpt.isEmpty()) {
-            return null;  // If account doesn't exist
+            return null; // If account doesn't exist
         }
-           
-       Account account = accountOpt.get();
+
+        Account account = accountOpt.get();
         if (!passwordEncoder.matches(password, account.getPassword())) {
-            return null;  // password mismatch
+            return null; // password mismatch
         }
 
         return jwtUtil.generateToken(account);
@@ -43,7 +44,8 @@ public class AuthService {
                 .map(Account::getUser)
                 .filter(u -> u.getEmail().equals(email))
                 .findFirst();
-        if (userOpt.isEmpty()) return "Invalid email";
+        if (userOpt.isEmpty())
+            return "Invalid email";
 
         // generate a UUID or JWT token as reset token
         return java.util.UUID.randomUUID().toString();
@@ -57,4 +59,13 @@ public class AuthService {
         // implement token validation & - TO DO
         return true;
     }
+    
+    /**
+    * Backend strength check ensures that even if someone bypasses frontend, the
+    * password is validated.
+    */
+
+    // public boolean isPasswordStrong(String password) {
+    //     return password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#&()–[{}]:;',?/*~$^+=<>]).{8,}$");
+    // }
 }
