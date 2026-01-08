@@ -57,9 +57,9 @@ public interface BorrowRequestRepository extends JpaRepository<BorrowRequest, In
         SELECT DISTINCT br.book.bookId
         FROM BorrowRequest br
         WHERE br.book.user.userId = :userId
-        AND br.status = com.booklend.backend.models.BorrowStatus.Accepted
+        AND br.status = :status
     """)
-    List<Long> findAcceptedBookIdsByOwner(@Param("userId") int userId);
+    List<Long> findAcceptedBookIdsByOwner(@Param("userId") int userId, @Param("status") BorrowStatus status);
 
 }
     

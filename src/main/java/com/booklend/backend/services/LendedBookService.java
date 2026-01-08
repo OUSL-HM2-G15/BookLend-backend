@@ -49,7 +49,7 @@ public class LendedBookService {
         List<LendedBookDto> lendedBooks = borrowRequestRepo.findLendedBooksByOwner(ownerId);
 
         // Get all books that already have an accepted request
-        List<Long> acceptedBookIds = borrowRequestRepo.findAcceptedBookIdsByOwner(ownerId);
+        List<Long> acceptedBookIds = borrowRequestRepo.findAcceptedBookIdsByOwner(ownerId, BorrowStatus.Accepted);
 
         // Set UI flags for each DTO
         for (LendedBookDto dto : lendedBooks) { // Iterate through each lended book DTO
