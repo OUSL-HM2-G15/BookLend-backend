@@ -62,10 +62,10 @@ public class BorrowRequestController {
      */
     @DeleteMapping("/{requestId}")
     public ResponseEntity<?> cancelBorrowRequest(
-            @PathVariable Long requestId,
+            @PathVariable Integer requestId,
             Authentication authentication) {
         try {
-            borrowRequestService.cancelRequest(requestId, authentication);
+            borrowRequestService.cancelRequest(requestId.longValue(), authentication);
             return ResponseEntity.ok("Borrow request canceled successfully");
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(e.getMessage());
@@ -80,7 +80,7 @@ public class BorrowRequestController {
      */
     @PutMapping("/{requestId}/close")
     public ResponseEntity<?> closeBorrowRequest(
-            @PathVariable Long requestId,
+            @PathVariable Integer requestId,
             Authentication authentication) {
         try {
             borrowRequestService.closeRequest(requestId, authentication);

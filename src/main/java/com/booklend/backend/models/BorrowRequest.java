@@ -1,48 +1,43 @@
 package com.booklend.backend.models;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
-import java.time.LocalDateTime;
 
 /**
  * Entity representing a borrow request.
  * Maps directly to `borrow_requests` table in DB.
  * Contains references to the book, borrower, and owner.
- */
+**/
 
-@Entity
-@Table(name = "borrow_requests")
 @Getter
 @Setter
-
+@Entity
+@Table(name = "borrow_requests")
 public class BorrowRequest {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "request_id")
-    private Long requestId;
+    private int requestId;
 
     @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
+    @JoinColumn(name = "book_id")
     private Book book;
 
     @ManyToOne
-    @JoinColumn(name = "borrower_id", nullable = false)
+    @JoinColumn(name = "borrower_id")
     private User borrower;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "owner_id")
     private User owner;
 
-    @Column(name = "status")
-    private String status; // Pending / Accepted / Rejected / Returned
+    @Enumerated(EnumType.STRING)
+    private BorrowStatus status;  // Pending / Accepted / Rejected / Returned / Cancelled
 
-    @Column(name = "requested_date")
     private LocalDateTime requestedDate;
-
-    @Column(name = "accepted_date")
     private LocalDateTime acceptedDate;
-
-    @Column(name = "returned_date")
     private LocalDateTime returnedDate;
+
 }
