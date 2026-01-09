@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.booklend.backend.dto.BookDTO;
+import com.booklend.backend.dto.BookRequestDTO;
 import com.booklend.backend.models.Book;
 import com.booklend.backend.services.BookService;
 import org.springframework.security.core.Authentication;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +33,11 @@ public class BookController {
     @Autowired
     private BookService bookService;
 
-    @GetMapping
+    /**
+     * GET /api/books/public
+     * Returns all books (public endpoint)
+     */
+    @GetMapping("/public")
     public List<Book> getAllBooks() {
         return bookService.getAllBooks();
     }
@@ -147,5 +153,74 @@ public class BookController {
                     .body(e.getMessage());
         }    
     }
+
+    /**
+     * PUT /api/books/me/{bookId}
+     * Update book details
+     */    
+    @PutMapping("/me/{bookId}")
+    public ResponseEntity<BookDTO> updateMyBook(
+            @PathVariable Long bookId,
+            @RequestBody BookRequestDTO bookRequestDTO,
+            Authentication authentication
+    ) {
+        try {
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .build();
+            }
+            String username = authentication.getName();
+            BookDTO updatedBook = bookService.updateMyBook(bookId, bookRequestDTO, username);
+
+            return ResponseEntity.ok(updatedBook);
+
+        } catch (RuntimeException e) {
+            log.error("Error updating book: {}", e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
+    }
+
+    // GET /books/me/{id} - Get a single book of logged-in user
+    @GetMapping("/me/{id}")
+    public ResponseEntity<?> getMyBookById(
+        @PathVariable Long id,
+        Authentication authentication) {
+
+    if (authentication == null || authentication.getName() == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+    }
+
+    try {
+        String username = authentication.getName();
+        BookDTO bookDTO = bookService.getMyBookById(id, username);
+        return ResponseEntity.ok(bookDTO);
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+    }
+
+    // DELETE /books/me/{id} - Delete logged-in user's book
+    @DeleteMapping("/me/{id}")
+    public ResponseEntity<?> deleteMyBook(
+        @PathVariable Long id,
+        Authentication authentication) {
+
+    if (authentication == null || authentication.getName() == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+    }
+
+    try {
+        String username = authentication.getName();
+        bookService.deleteMyBook(id, username);
+        return ResponseEntity.ok("Book deleted successfully");
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+}
 
 }
