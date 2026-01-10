@@ -33,7 +33,7 @@ public class BorrowRequestService {
 
     /** Create a new borrow request */
     public BorrowedBookDTO createRequest(Long bookId, Authentication authentication) {
-        Account account = accountRepository.findById(authentication.getName())
+        Account account = accountRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
 
         User borrower = account.getUser();
@@ -45,7 +45,7 @@ public class BorrowRequestService {
             throw new RuntimeException("Cannot borrow your own book");
         }
 
-        // NEW: prevent duplicate active requests
+        // Prevent duplicate active requests
         boolean alreadyRequested = borrowRequestRepository
                 .existsByBook_BookIdAndStatus(bookId, BorrowStatus.Pending)
                 || borrowRequestRepository
@@ -78,8 +78,12 @@ public class BorrowRequestService {
                 .orElseThrow(() -> new RuntimeException("Unauthorized"));
 
         int borrowerId = account.getUser().getUserId();
-
-        return borrowRequestRepository.findByBorrower_UserId(borrowerId)
+        // Fetch borrow requests with all relevant statuses (Pending, Accepted,
+        // Rejected, and Returned)
+        return borrowRequestRepository
+                .findByBorrower_UserIdAndStatusIn(borrowerId,
+                        List.of(BorrowStatus.Pending, BorrowStatus.Accepted, BorrowStatus.Rejected,
+                                BorrowStatus.Returned))
                 .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -101,7 +105,11 @@ public class BorrowRequestService {
             throw new RuntimeException("Only pending requests can be cancelled");
         }
 
-        borrowRequestRepository.save(request);
+        // Update status to Cancelled instead of ignoring
+        request.setStatus(BorrowStatus.Cancelled);
+        request.setReturnedDate(LocalDateTime.now()); // Mark time of cancellation
+
+        borrowRequestRepository.save(request); // save updated status
     }
 
     /** Close a request (e.g., returned or rejected) */
@@ -122,28 +130,58 @@ public class BorrowRequestService {
         borrowRequestRepository.save(request);
     }
 
+    /** Re reguest book that are cancelled */
+    public void reRequest(Long requestId, Authentication authentication) {
+        Account account = accountRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Unauthorized"));
+
+        BorrowRequest request = borrowRequestRepository.findById(requestId.intValue())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        if (request.getBorrower().getUserId() != account.getUser().getUserId()) {
+            throw new RuntimeException("You cannot re-request this book");
+        }
+
+        if (request.getStatus() != BorrowStatus.Cancelled) {
+            throw new RuntimeException("Only cancelled requests can be re-requested");
+        }
+
+        // Change status back to Pending for re-request
+        request.setStatus(BorrowStatus.Pending);
+        borrowRequestRepository.save(request);
+    }
+
     /**
      * Helper method to convert BorrowRequest entity to BorrowedBookDTO.
      *
      * @param borrowRequest BorrowRequest entity
      * @return BorrowedBookDTO with relevant data for frontend
      */
-    private BorrowedBookDTO mapToDTO(BorrowRequest borrowRequest) {
+    public BorrowedBookDTO mapToDTO(BorrowRequest borrowRequest) {
         BorrowedBookDTO dto = new BorrowedBookDTO();
+
+        // Mapping basic fields
         dto.setRequestId((long) borrowRequest.getRequestId());
         dto.setBookId((long) borrowRequest.getBook().getBookId());
         dto.setTitle(borrowRequest.getBook().getTitle());
         dto.setAuthor(borrowRequest.getBook().getAuthor());
         dto.setFeePerWeek(borrowRequest.getBook().getFeePerWeek());
-        dto.setStatus(borrowRequest.getStatus().name());
+        dto.setStatus(borrowRequest.getStatus().name()); // Enum to String
         dto.setImageUrl(borrowRequest.getBook().getImageUrl());
-        dto.setLocationName(borrowRequest.getBook().getAvailableLocation() != null
-                ? borrowRequest.getBook().getAvailableLocation().getLocationName()
-                : null);
+
+        // Location mapping
+        String locationName = null;
+        if (borrowRequest.getBook().getAvailableLocation() != null) {
+            locationName = borrowRequest.getBook().getAvailableLocation().getLocationName();
+        }
+        dto.setLocationName(locationName);
+
+        // Date mappings
         dto.setRequestedDate(borrowRequest.getRequestedDate());
         dto.setAcceptedDate(borrowRequest.getAcceptedDate());
         dto.setReturnedDate(borrowRequest.getReturnedDate());
 
+        // Owner info mapping
         if (borrowRequest.getOwner() != null) {
             BorrowedBookDTO.OwnerInfo ownerInfo = new BorrowedBookDTO.OwnerInfo();
             ownerInfo.setName(borrowRequest.getOwner().getFullName());
@@ -151,6 +189,7 @@ public class BorrowRequestService {
             ownerInfo.setWhatsappNumber(borrowRequest.getOwner().getWhatsappNo());
             dto.setOwner(ownerInfo);
         }
+
         return dto;
     }
 }

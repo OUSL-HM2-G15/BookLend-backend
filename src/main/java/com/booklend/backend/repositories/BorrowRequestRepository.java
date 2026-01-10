@@ -76,4 +76,9 @@ public interface BorrowRequestRepository extends JpaRepository<BorrowRequest, In
      */
     Optional<BorrowRequest> findByRequestIdAndBorrower_UserId(int requestId, int borrowerId);
 
+    List<BorrowRequest> findByBorrower_UserId(Long userId);
+    
+    public List<BorrowRequest> findByBorrower_UserIdAndStatusIn(int borrowerId, List<BorrowStatus> statuses);
+
+
 }
