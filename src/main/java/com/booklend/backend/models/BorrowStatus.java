@@ -9,5 +9,5 @@ public enum BorrowStatus {
     Accepted,
     Rejected,
     Returned,
-    Cancelled
+    Cancelled // Cancelled requests if pending
 }
