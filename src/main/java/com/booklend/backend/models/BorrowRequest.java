@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
+
 /**
  * Entity representing a borrow request.
  * Maps directly to `borrow_requests` table in DB.
