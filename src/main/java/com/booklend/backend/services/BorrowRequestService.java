@@ -170,11 +170,8 @@ public class BorrowRequestService {
         dto.setImageUrl(borrowRequest.getBook().getImageUrl());
 
         // Location mapping
-        String locationName = null;
-        if (borrowRequest.getBook().getAvailableLocation() != null) {
-            locationName = borrowRequest.getBook().getAvailableLocation().getLocationName();
-        }
-        dto.setLocationName(locationName);
+        dto.setLocationName(borrowRequest.getBook().getAvailableLocation() != null
+                ? borrowRequest.getBook().getAvailableLocation().getLocationName() : null);
 
         // Date mappings
         dto.setRequestedDate(borrowRequest.getRequestedDate());
