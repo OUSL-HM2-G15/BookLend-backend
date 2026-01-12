@@ -45,13 +45,26 @@ public class BorrowRequestService {
             throw new RuntimeException("Cannot borrow your own book");
         }
 
-        // Prevent duplicate active requests
-        boolean alreadyRequested = borrowRequestRepository
-                .existsByBook_BookIdAndStatus(bookId, BorrowStatus.Pending)
-                || borrowRequestRepository
-                        .existsByBook_BookIdAndStatus(bookId, BorrowStatus.Accepted);
-        if (alreadyRequested) {
-            throw new RuntimeException("This book is already requested or borrowed");
+        // Allow multiple PENDING, block only ACCEPTED
+        boolean alreadyBorrowed = borrowRequestRepository.existsByBook_BookIdAndStatus(
+                        bookId,
+                        BorrowStatus.Accepted
+                ); 
+
+        if (alreadyBorrowed) {
+            throw new RuntimeException("This book is already borrowed");
+        }
+
+        // Block duplicate ACTIVE request by same user
+        boolean duplicateActiveRequest =
+                borrowRequestRepository.existsByBook_BookIdAndBorrower_UserIdAndStatusIn(
+                        bookId,
+                        borrower.getUserId(),
+                        List.of(BorrowStatus.Pending, BorrowStatus.Accepted)
+                );
+
+        if (duplicateActiveRequest) {
+            throw new RuntimeException("You already have an active request for this book");
         }
 
         BorrowRequest request = new BorrowRequest();
@@ -146,8 +159,20 @@ public class BorrowRequestService {
             throw new RuntimeException("Only cancelled requests can be re-requested");
         }
 
+        // Prevent re-request if book already borrowed by someone else
+        boolean alreadyBorrowed =
+                borrowRequestRepository.existsByBook_BookIdAndStatus(
+                        request.getBook().getBookId(),
+                        BorrowStatus.Accepted
+                );
+
+        if (alreadyBorrowed) {
+            throw new RuntimeException("This book is already borrowed");
+        }
+
         // Change status back to Pending for re-request
-        request.setStatus(BorrowStatus.Pending);
+        // Reuse same request, do NOT create new one 
+        request.setStatus(BorrowStatus.Pending); 
         borrowRequestRepository.save(request);
     }
 

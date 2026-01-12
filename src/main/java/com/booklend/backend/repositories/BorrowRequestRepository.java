@@ -80,6 +80,11 @@ public interface BorrowRequestRepository extends JpaRepository<BorrowRequest, In
     
     public List<BorrowRequest> findByBorrower_UserIdAndStatusIn(int borrowerId, List<BorrowStatus> statuses);
 
-
+    // Block duplicate ACTIVE requests by same user
+    boolean existsByBook_BookIdAndBorrower_UserIdAndStatusIn(
+            long bookId,
+            int userId,
+            List<BorrowStatus> statuses
+    ); 
 }
 
