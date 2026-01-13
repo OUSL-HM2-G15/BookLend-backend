@@ -144,6 +144,7 @@ public class BorrowRequestController {
         }
     }
 
+
     /**
      * GET /api/borrow-requests/{requestId}/book-details
      * Returns book details with owner info ONLY if request is Accepted
