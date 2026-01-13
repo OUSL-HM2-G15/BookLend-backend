@@ -25,7 +25,8 @@ public class BorrowedBookDTO {
     private LocalDateTime acceptedDate;  // When the request was accepted 
     private LocalDateTime returnedDate;  // When the book was returned 
 
-    // Owner info for tooltip in frontend
+    // Owner info for tooltip in frontend and 
+    // Also hidden book details
     private OwnerInfo owner;
 
     @Getter

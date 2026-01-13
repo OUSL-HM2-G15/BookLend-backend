@@ -143,4 +143,20 @@ public class BorrowRequestController {
             return ResponseEntity.status(500).body("An error occurred while fetching the borrow history.");
         }
     }
+
+    /**
+     * GET /api/borrow-requests/{requestId}/book-details
+     * Returns book details with owner info ONLY if request is Accepted
+     */
+    @GetMapping("/{requestId}/book-details")
+    public ResponseEntity<?> getBorrowedBookDetails(
+            @PathVariable int requestId,
+            Authentication authentication) {
+        try {
+            return ResponseEntity.ok(
+                    borrowRequestService.getBookDetailsForBorrower(requestId, authentication));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(403).body(e.getMessage());
+        }
+    }
 }
