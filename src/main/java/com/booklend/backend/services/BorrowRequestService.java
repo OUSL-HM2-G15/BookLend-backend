@@ -171,7 +171,7 @@ public class BorrowRequestService {
         request.setStatus(BorrowStatus.Pending);
         borrowRequestRepository.save(request);
     }
-    
+
     /**
      * Get book details for borrowers who have an ACCEPTED request
      */
@@ -233,6 +233,10 @@ public class BorrowRequestService {
      * @return BorrowedBookDTO with relevant data for frontend
      */
     public BorrowedBookDTO mapToDTO(BorrowRequest borrowRequest) {
+        if (borrowRequest == null) {
+            throw new RuntimeException("BorrowRequest is null"); // Exit if borrowRequest is null
+        }
+
         BorrowedBookDTO dto = new BorrowedBookDTO();
 
         // Mapping basic fields
