@@ -6,11 +6,14 @@ import com.booklend.backend.models.RequestStatus;
 import com.booklend.backend.models.User;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 /**
  * Repository interface to access book_requests table in DB.
  */
+@Repository
 public interface BookRequestRepository extends JpaRepository<BookRequest, Integer> {
 
     List<BookRequest> findByLocation(Location location);

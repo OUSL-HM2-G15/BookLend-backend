@@ -7,6 +7,9 @@ import com.booklend.backend.models.User;
 import com.booklend.backend.repositories.AccountRepository;
 import com.booklend.backend.repositories.BookRequestRepository;
 import com.booklend.backend.repositories.LocationRepository;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -14,12 +17,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Service class for handling book requests logic.
  */
+@Slf4j
 @Service
 public class BookRequestService {
 
@@ -31,8 +32,6 @@ public class BookRequestService {
 
     @Autowired
     private LocationRepository locationRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(BookRequestService.class);
 
     /**
      * Create a new book request for the logged-in user.
@@ -62,15 +61,15 @@ public class BookRequestService {
             return bookRequestRepository.save(request);
         } catch (RuntimeException e) {
             // Log the error details
-            logger.error("Error creating book request: " + e.getMessage(), e);
-            throw e;// Re-throw the exception to handle it in the controller
+            log.error("Error creating book request: {}", e.getMessage(), e);
+            throw e; // Re-throw the exception to handle it in the controller
         }
     }
 
     /**
      * Get all book requests posted by the logged-in user.
      */
-    public List<BookRequest> getMyRequests(Authentication authentication) {
+    public List<BookRequest> getUserRequests(Authentication authentication) {
         try {
             // Fetch the user based on authentication
             User user = accountRepository.findByUsername(authentication.getName())
@@ -80,7 +79,7 @@ public class BookRequestService {
             // Fetch and return all the requests made by this user
             return bookRequestRepository.findByUser(user);
         } catch (RuntimeException e) {
-            logger.error("Error fetching book requests: " + e.getMessage(), e);
+            log.error("Error fetching book requests: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -93,7 +92,7 @@ public class BookRequestService {
                     .getUser();
             return bookRequestRepository.findByUser(user);
         } catch (RuntimeException e) {
-            logger.error("Error fetching book request history: " + e.getMessage(), e);
+            log.error("Error fetching book request history: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -117,8 +116,8 @@ public class BookRequestService {
 
             request.setStatus(RequestStatus.Cancelled);
             bookRequestRepository.save(request);
-        } catch (RuntimeException e) {
-            logger.error("Error cancelling request: " + e.getMessage(), e);
+         } catch (RuntimeException e) {
+            log.error("Error cancelling request: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -145,7 +144,7 @@ public class BookRequestService {
             request.setStatus(RequestStatus.Pending);
             bookRequestRepository.save(request);
         } catch (RuntimeException e) {
-            logger.error("Error re-requesting request: " + e.getMessage(), e);
+            log.error("Error re-requesting request: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -168,7 +167,7 @@ public class BookRequestService {
             bookRequestRepository.save(request);
 
         } catch (RuntimeException e) {
-            logger.error("Error marking request as available: " + e.getMessage(), e);
+            log.error("Error marking request as available: {}", e.getMessage(), e);
             throw e;
         }
     }
