@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.time.LocalDateTime;
 
@@ -47,21 +48,18 @@ public class BorrowRequestService {
 
         // Allow multiple PENDING, block only ACCEPTED
         boolean alreadyBorrowed = borrowRequestRepository.existsByBook_BookIdAndStatus(
-                        bookId,
-                        BorrowStatus.Accepted
-                ); 
+                bookId,
+                BorrowStatus.Accepted);
 
         if (alreadyBorrowed) {
             throw new RuntimeException("This book is already borrowed");
         }
 
         // Block duplicate ACTIVE request by same user
-        boolean duplicateActiveRequest =
-                borrowRequestRepository.existsByBook_BookIdAndBorrower_UserIdAndStatusIn(
-                        bookId,
-                        borrower.getUserId(),
-                        List.of(BorrowStatus.Pending, BorrowStatus.Accepted)
-                );
+        boolean duplicateActiveRequest = borrowRequestRepository.existsByBook_BookIdAndBorrower_UserIdAndStatusIn(
+                bookId,
+                borrower.getUserId(),
+                List.of(BorrowStatus.Pending, BorrowStatus.Accepted));
 
         if (duplicateActiveRequest) {
             throw new RuntimeException("You already have an active request for this book");
@@ -160,20 +158,72 @@ public class BorrowRequestService {
         }
 
         // Prevent re-request if book already borrowed by someone else
-        boolean alreadyBorrowed =
-                borrowRequestRepository.existsByBook_BookIdAndStatus(
-                        request.getBook().getBookId(),
-                        BorrowStatus.Accepted
-                );
+        boolean alreadyBorrowed = borrowRequestRepository.existsByBook_BookIdAndStatus(
+                request.getBook().getBookId(),
+                BorrowStatus.Accepted);
 
         if (alreadyBorrowed) {
             throw new RuntimeException("This book is already borrowed");
         }
 
         // Change status back to Pending for re-request
-        // Reuse same request, do NOT create new one 
-        request.setStatus(BorrowStatus.Pending); 
+        // Reuse same request, do NOT create new one
+        request.setStatus(BorrowStatus.Pending);
         borrowRequestRepository.save(request);
+    }
+
+    /**
+     * Get book details for borrowers who have an ACCEPTED request
+     */
+
+    public Map<String, Object> getBookDetailsForBorrower(int requestId, Authentication authentication) {
+        Account account = accountRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Unauthorized"));
+
+        BorrowRequest request = borrowRequestRepository
+                .findByRequestIdAndBorrower_UserId(requestId, account.getUser().getUserId())
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        if (request.getStatus() != BorrowStatus.Accepted) {
+            throw new RuntimeException("Access denied: Request not accepted");
+        }
+
+        Book book = request.getBook();
+        User owner = request.getOwner();
+
+        // Use HashMap to avoid Map.of limitations
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("bookId", book.getBookId());
+        response.put("title", book.getTitle());
+        response.put("author", book.getAuthor());
+        response.put("description", book.getDescription());
+        response.put("feePerWeek", book.getFeePerWeek());
+        response.put("imageUrl", book.getImageUrl());
+        response.put("publishedYear", book.getPublishedYear());
+        response.put("status", book.getStatus());
+
+        // Nested map for location
+        Map<String, Object> locationMap = new java.util.HashMap<>();
+        locationMap.put("locationName", book.getAvailableLocation() != null
+                ? book.getAvailableLocation().getLocationName()
+                : null);
+        response.put("availableLocation", locationMap);
+
+        // Nested map for category
+        Map<String, Object> categoryMap = new java.util.HashMap<>();
+        categoryMap.put("categoryName", book.getCategory() != null
+                ? book.getCategory().getCategoryName()
+                : null);
+        response.put("category", categoryMap);
+
+        // Nested map for owner info
+        Map<String, Object> ownerMap = new java.util.HashMap<>();
+        ownerMap.put("name", owner.getFullName());
+        ownerMap.put("phone", owner.getContactNo());
+        ownerMap.put("whatsappNumber", owner.getWhatsappNo());
+        response.put("owner", ownerMap);
+
+        return response;
     }
 
     /**
@@ -183,6 +233,10 @@ public class BorrowRequestService {
      * @return BorrowedBookDTO with relevant data for frontend
      */
     public BorrowedBookDTO mapToDTO(BorrowRequest borrowRequest) {
+        if (borrowRequest == null) {
+            throw new RuntimeException("BorrowRequest is null"); // Exit if borrowRequest is null
+        }
+
         BorrowedBookDTO dto = new BorrowedBookDTO();
 
         // Mapping basic fields
@@ -196,7 +250,8 @@ public class BorrowRequestService {
 
         // Location mapping
         dto.setLocationName(borrowRequest.getBook().getAvailableLocation() != null
-                ? borrowRequest.getBook().getAvailableLocation().getLocationName() : null);
+                ? borrowRequest.getBook().getAvailableLocation().getLocationName()
+                : null);
 
         // Date mappings
         dto.setRequestedDate(borrowRequest.getRequestedDate());
@@ -204,12 +259,14 @@ public class BorrowRequestService {
         dto.setReturnedDate(borrowRequest.getReturnedDate());
 
         // Owner info mapping
-        if (borrowRequest.getOwner() != null) {
+        if (borrowRequest.getStatus() == BorrowStatus.Accepted && borrowRequest.getOwner() != null) {
             BorrowedBookDTO.OwnerInfo ownerInfo = new BorrowedBookDTO.OwnerInfo();
             ownerInfo.setName(borrowRequest.getOwner().getFullName());
             ownerInfo.setPhone(borrowRequest.getOwner().getContactNo());
             ownerInfo.setWhatsappNumber(borrowRequest.getOwner().getWhatsappNo());
             dto.setOwner(ownerInfo);
+        } else {
+            dto.setOwner(null); // hide for Pending, Rejected, Cancelled, Returned
         }
 
         return dto;
