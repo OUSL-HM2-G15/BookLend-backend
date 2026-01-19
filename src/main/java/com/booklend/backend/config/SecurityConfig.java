@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/locations/**").permitAll()
                         .requestMatchers("/api/categories/**").permitAll()
                         .requestMatchers("/api/books/public/**").permitAll()
+                        .requestMatchers("/api/imagekit/auth").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

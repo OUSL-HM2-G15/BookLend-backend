@@ -24,4 +24,11 @@ public interface BookRequestRepository extends JpaRepository<BookRequest, Intege
 
    //  Fetch multiple statuses for active requests
     List<BookRequest> findByUserAndStatusIn(User user, List<RequestStatus> statuses);
+
+    List<BookRequest> findByLocation_LocationIdAndUser_UserIdNotAndStatus(
+            Long locationId,
+            int userId,
+            RequestStatus status
+    );
+
 }

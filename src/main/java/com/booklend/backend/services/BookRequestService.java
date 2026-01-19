@@ -1,5 +1,6 @@
 package com.booklend.backend.services;
 
+import com.booklend.backend.dto.BookRequestReceivedDTO;
 import com.booklend.backend.models.BookRequest;
 import com.booklend.backend.models.Location;
 import com.booklend.backend.models.RequestStatus;
@@ -15,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -168,6 +170,48 @@ public class BookRequestService {
 
         } catch (RuntimeException e) {
             log.error("Error marking request as available: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Get book requests received for the logged-in user
+     * (location-based matching)
+     */
+    private static final DateTimeFormatter DATE_FORMAT =
+        DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    public List<BookRequestReceivedDTO> getRequestsReceivedForUser(Authentication authentication) {
+        try {
+            User user = accountRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"))
+                    .getUser();
+
+            if (user.getLocation() == null) {
+                throw new RuntimeException("User location not set");
+            }
+
+            List<BookRequest> requests =
+                    bookRequestRepository.findByLocation_LocationIdAndUser_UserIdNotAndStatus(
+                            user.getLocation().getLocationId(),
+                            user.getUserId(),
+                            RequestStatus.Pending
+                    );
+
+            return requests.stream()
+                    .map(br -> new BookRequestReceivedDTO(
+                            br.getBookRequestId(),
+                            br.getTitle(),
+                            br.getAuthor(),
+                            br.getLocation().getLocationName(),
+                            br.getUser().getFullName(),
+                            br.getStatus().name(),
+                            br.getCreatedAt().format(DATE_FORMAT)
+                    ))
+                    .toList();
+
+        } catch (RuntimeException e) {
+            log.error("Error fetching received requests: {}", e.getMessage(), e);
             throw e;
         }
     }
