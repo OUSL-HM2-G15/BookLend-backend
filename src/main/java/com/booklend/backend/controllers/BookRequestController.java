@@ -123,4 +123,22 @@ public class BookRequestController {
             return ResponseEntity.badRequest().body("Failed to mark request as available.");
         }
     }
+
+    /**
+     * GET /api/book-requests/received
+     * Get book requests received for the logged-in user
+     * (location-based matching)
+     */
+    @GetMapping("/received")
+    public ResponseEntity<?> getReceivedRequests(Authentication authentication) {
+        try {
+            return ResponseEntity.ok(
+                    bookRequestService.getRequestsReceivedForUser(authentication)
+            );
+        } catch (RuntimeException e) {
+            log.error("Error fetching received requests: " + e.getMessage(), e);
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
 }
