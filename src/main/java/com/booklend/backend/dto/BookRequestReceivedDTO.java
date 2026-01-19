@@ -1,8 +1,10 @@
 package com.booklend.backend.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public class BookRequestReceivedDTO {
 
     private int requestId;
@@ -13,21 +15,4 @@ public class BookRequestReceivedDTO {
     private String status;
     private String createdAt;
 
-    public BookRequestReceivedDTO(
-            int requestId,
-            String title,
-            String author,
-            String locationName,
-            String requesterName,
-            String status,
-            String createdAt
-    ) {
-        this.requestId = requestId;
-        this.title = title;
-        this.author = author;
-        this.locationName = locationName;
-        this.requesterName = requesterName;
-        this.status = status;
-        this.createdAt = createdAt;
-    }
 }
