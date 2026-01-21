@@ -118,7 +118,7 @@ public class BookRequestService {
 
             request.setStatus(RequestStatus.Cancelled);
             bookRequestRepository.save(request);
-         } catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             log.error("Error cancelling request: {}", e.getMessage(), e);
             throw e;
         }
@@ -155,10 +155,19 @@ public class BookRequestService {
      * Mark request as fulfilled (This book is available now)
      * Used when another user posts a book to satisfy this request.
      */
-    public void markAsAvailable(int requestId) {
+    public void markAsAvailable(int requestId, Authentication authentication) {
         try {
             BookRequest request = bookRequestRepository.findById(requestId)
                     .orElseThrow(() -> new RuntimeException("Request not found"));
+
+            // Ensure current user is in same location
+            User user = accountRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"))
+                    .getUser();
+                    
+            if (!request.getLocation().getLocationId().equals(user.getLocation().getLocationId())) {
+                throw new RuntimeException("Forbidden: cannot update request outside your location");
+            }
 
             // Only mark the request as available if it's currently Pending
             if (request.getStatus() != RequestStatus.Pending)
@@ -178,8 +187,7 @@ public class BookRequestService {
      * Get book requests received for the logged-in user
      * (location-based matching)
      */
-    private static final DateTimeFormatter DATE_FORMAT =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public List<BookRequestReceivedDTO> getRequestsReceivedForUser(Authentication authentication) {
         try {
@@ -191,12 +199,10 @@ public class BookRequestService {
                 throw new RuntimeException("User location not set");
             }
 
-            List<BookRequest> requests =
-                    bookRequestRepository.findByLocation_LocationIdAndUser_UserIdNotAndStatus(
-                            user.getLocation().getLocationId(),
-                            user.getUserId(),
-                            RequestStatus.Pending
-                    );
+            List<BookRequest> requests = bookRequestRepository.findByLocation_LocationIdAndUser_UserIdNotAndStatus(
+                    user.getLocation().getLocationId(),
+                    user.getUserId(),
+                    RequestStatus.Pending);
 
             return requests.stream()
                     .map(br -> new BookRequestReceivedDTO(
@@ -206,14 +212,40 @@ public class BookRequestService {
                             br.getLocation().getLocationName(),
                             br.getUser().getFullName(),
                             br.getStatus().name(),
-                            br.getCreatedAt().format(DATE_FORMAT)
-                    ))
+                            br.getCreatedAt().format(DATE_FORMAT)))
                     .toList();
 
         } catch (RuntimeException e) {
             log.error("Error fetching received requests: {}", e.getMessage(), e);
             throw e;
         }
+    }
+
+    /**
+     * Fetch a single book request by its ID
+     * Only visible to users from the same location
+     */
+    public BookRequest getRequestById(int requestId, Authentication authentication) {
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        // Get logged-in user
+        User currentUser = accountRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"))
+                .getUser();
+
+        // Fetch request from repository
+        BookRequest request = bookRequestRepository.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Request not found"));
+
+        // Restrict visibility only to same-location users
+        if (!request.getLocation().getLocationId().equals(currentUser.getLocation().getLocationId())) {
+            throw new RuntimeException("Forbidden: Request not in your location");
+        }
+
+        return request;
     }
 
 }

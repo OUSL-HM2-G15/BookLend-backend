@@ -4,10 +4,13 @@ import com.booklend.backend.dto.BookDTO;
 import com.booklend.backend.dto.BookRequestDTO;
 import com.booklend.backend.models.Account;
 import com.booklend.backend.models.Book;
+import com.booklend.backend.models.BookRequest;
 import com.booklend.backend.models.Category;
 import com.booklend.backend.models.Location;
+import com.booklend.backend.models.RequestStatus;
 import com.booklend.backend.repositories.AccountRepository;
 import com.booklend.backend.repositories.BookRepository;
+import com.booklend.backend.repositories.BookRequestRepository;
 import com.booklend.backend.repositories.CategoryRepository;
 import com.booklend.backend.repositories.LocationRepository;
 import com.booklend.backend.models.User;
@@ -34,6 +37,9 @@ public class BookService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private BookRequestRepository bookRequestRepository;
 
     // Get all books
     public List<Book> getAllBooks() {
@@ -74,7 +80,28 @@ public class BookService {
         book.setPublishedYear(publishedYear);
         book.setImageUrl(image_url); 
 
-        return bookRepository.save(book); // Save and return the new book
+        Book savedBook = bookRepository.save(book);
+
+        try {
+            List<BookRequest> matchingRequests = bookRequestRepository
+                    .findByLocation_LocationIdAndUser_UserIdNotAndStatus(
+                            location.getLocationId(),
+                            currentUser.getUserId(),
+                            RequestStatus.Pending
+                    );
+
+            for (BookRequest req : matchingRequests) {
+                if (req.getTitle().equalsIgnoreCase(title)) {
+                    req.setStatus(RequestStatus.This_book_is_available_now);
+                    bookRequestRepository.save(req);
+                    log.info("Marked request id {} as available", req.getBookRequestId());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error updating matching book requests: {}", e.getMessage());
+        }
+
+        return savedBook; // Return the saved book
     }
 
     // Get book by ID
