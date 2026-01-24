@@ -59,7 +59,7 @@ public class BookRequestController {
             List<BookRequest> requests = bookRequestService.getUserRequests(authentication);
             return ResponseEntity.ok(requests); // Return the list of requests
         } catch (RuntimeException e) {
-             // Log the error details
+            // Log the error details
             log.error("Error fetching book requests: " + e.getMessage(), e);
             return ResponseEntity.status(401).body(e.getMessage()); // Handle unauthorized access
         }
@@ -92,7 +92,7 @@ public class BookRequestController {
             return ResponseEntity.ok("Request re-submitted successfully");
 
         } catch (RuntimeException e) {
-             log.error("Error re-requesting: " + e.getMessage(), e);
+            log.error("Error re-requesting: " + e.getMessage(), e);
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -114,9 +114,9 @@ public class BookRequestController {
     }
 
     @PutMapping("/{requestId}/mark-as-available")
-    public ResponseEntity<?> markAsAvailable(@PathVariable int requestId) {
+    public ResponseEntity<?> markAsAvailable(@PathVariable int requestId, Authentication authentication) {
         try {
-            bookRequestService.markAsAvailable(requestId); // Call the existing service method
+            bookRequestService.markAsAvailable(requestId, authentication);
             return ResponseEntity.ok("Request marked as available now.");
         } catch (RuntimeException e) {
             log.error("Error marking request as available now: " + e.getMessage(), e);
@@ -133,11 +133,27 @@ public class BookRequestController {
     public ResponseEntity<?> getReceivedRequests(Authentication authentication) {
         try {
             return ResponseEntity.ok(
-                    bookRequestService.getRequestsReceivedForUser(authentication)
-            );
+                    bookRequestService.getRequestsReceivedForUser(authentication));
         } catch (RuntimeException e) {
             log.error("Error fetching received requests: " + e.getMessage(), e);
             return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    /**
+     * GET /api/book-requests/{requestId}
+     * Fetch a single request for autofill
+     */
+    @GetMapping("/{requestId}")
+    public ResponseEntity<?> getRequestById(@PathVariable int requestId, Authentication authentication) {
+        try {
+            BookRequest request = bookRequestService.getRequestById(requestId, authentication);
+            return ResponseEntity.ok(request);
+        } catch (RuntimeException e) {
+            log.error("Error fetching request by ID: {}", e.getMessage());
+            int status = e.getMessage().contains("Unauthorized") ? 401
+                    : e.getMessage().contains("Forbidden") ? 403 : 404;
+            return ResponseEntity.status(status).body(e.getMessage());
         }
     }
 
