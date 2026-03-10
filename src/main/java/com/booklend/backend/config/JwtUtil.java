@@ -11,7 +11,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.Claims;
 import java.util.Date;
 
-
 @Component
 public class JwtUtil {
     // **Use environment variable instead of hardcoding**
@@ -21,7 +20,7 @@ public class JwtUtil {
     @Value("${jwt.expiration.ms:3600000}") // Default 1 hour
     private long jwtExpirationMs;
 
-     private SecretKey getSigningKey() {
+    private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -47,7 +46,7 @@ public class JwtUtil {
      * @param token - The JWT token to parse
      * @return Claims object (contains user details like username and role)
      */
-    
+
     public Claims parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey()) // Use the secret key to validate the token
@@ -66,18 +65,23 @@ public class JwtUtil {
         return parseToken(token).getSubject(); // Extract username from token
     }
 
-    
     /**
      * Validates the JWT token.
+     * 
      * @param token - The JWT token to validate.
      * @return true if the token is valid, false otherwise.
      */
     public boolean validateToken(String token) {
         try {
             parseToken(token);
-            return true;  // Token is valid
+            return true; // Token is valid
         } catch (Exception e) {
-            return false;  // Token is invalid
+            return false; // Token is invalid
         }
+    }
+    
+
+    public Date extractExpiration(String token) {
+        return parseToken(token).getExpiration();
     }
 }
